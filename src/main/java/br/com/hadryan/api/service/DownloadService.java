@@ -25,7 +25,7 @@ public class DownloadService {
                 "yt-dlp",
                 "-f", "bv+ba/b",
                 "-S", "res:" + request.getResolution(),
-                "-o", tempDirectory + File.separator + "%(title)s.f%(format_id)s.%(ext)s",
+                "-o", tempDirectory + File.separator + "%(title)s.%(ext)s",
                 request.getUrl()
         );
 
@@ -54,7 +54,6 @@ public class DownloadService {
                     .map(Path::toFile)
                     .findFirst()
                     .orElseThrow(() -> new RuntimeException("Downloaded file not found"));
-
         } catch (Exception e) {
             log.error("Error during download", e);
             throw new RuntimeException("Failed to download video", e);

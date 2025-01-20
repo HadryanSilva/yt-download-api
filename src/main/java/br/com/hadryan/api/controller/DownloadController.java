@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @RequiredArgsConstructor
 @RestController
@@ -24,11 +26,12 @@ public class DownloadController {
     @PostMapping
     public ResponseEntity<Resource> requestDownload(@RequestBody DownloadPostRequest request) {
         File file = downloadService.download(request);
+        String encodedFileName = URLEncoder.encode(file.getName(), StandardCharsets.UTF_8);
 
         Resource resource = new FileSystemResource(file);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"");
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encodedFileName + "\"");
         headers.add(HttpHeaders.CONTENT_TYPE, "application/octet-stream");
 
         return ResponseEntity.ok()
