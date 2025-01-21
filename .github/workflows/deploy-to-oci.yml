@@ -108,7 +108,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
           source: app/yt-download-api-${{env.VERSION}}.jar
-          target: "."
+          target: /home/ubuntu/app/*.jar
 
       - name: Start App
         uses: appleboy/ssh-action@master
