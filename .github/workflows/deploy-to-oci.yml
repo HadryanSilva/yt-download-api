@@ -116,6 +116,6 @@ jobs:
             username: ubuntu
             key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
             script: |
-              sudo mv ~/app/yt-download-api-${{env.VERSION}}.jar /app/yt-download-api.jar
-              nohup java -jar /app/yt-download-api.jar > output.$(date --iso).log 2>&1 &
+              sudo mv ~/app/build/libs/yt-download-api-${{env.VERSION}}.jar /app/build/libs/yt-download-api.jar
+              nohup java -jar /app/build/libs/yt-download-api.jar > output.$(date --iso).log 2>&1 &
 
