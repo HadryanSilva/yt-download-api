@@ -5,6 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
@@ -15,22 +16,27 @@ public class DownloadService {
 
     public File download(DownloadPostRequest request) {
         String tempDirectory = System.getProperty("java.io.tmpdir") + File.separator + "yt-dlp-downloads";
-        File outputDir = new File(tempDirectory);
-        if (!outputDir.exists() && !outputDir.mkdirs()) {
-            throw new RuntimeException("Failed to create temporary directory for downloads");
-        }
-
-        ProcessBuilder processBuilder = new ProcessBuilder();
-        processBuilder.command(
-                "yt-dlp",
-                "--cookies", "cookies.txt",
-                "-f", "bv+ba/b",
-                "-S", "res:" + request.getResolution(),
-                "-o", tempDirectory + File.separator + "%(title)s.%(ext)s",
-                request.getUrl()
-        );
-
         try {
+            String jarDir = new File(ProcessBuilder.class.getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation()
+                    .toURI())
+                    .getParent();
+            String cookiesFilePath = jarDir + File.separator + "cookies.txt";
+            File outputDir = new File(tempDirectory);
+            if (!outputDir.exists() && !outputDir.mkdirs()) {
+                throw new RuntimeException("Failed to create temporary directory for downloads");
+            }
+
+            ProcessBuilder processBuilder = new ProcessBuilder();
+            processBuilder.command(
+                    "yt-dlp",
+                    "--cookies", cookiesFilePath,
+                    "-f", "bv+ba/b",
+                    "-S", "res:" + request.getResolution(),
+                    "-o", tempDirectory + File.separator + "%(title)s.%(ext)s",
+                    request.getUrl()
+            );
             log.info("Starting download process");
             Process process = processBuilder.start();
 
