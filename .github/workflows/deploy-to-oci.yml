@@ -36,7 +36,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: 'yt-download-api-${{env.VERSION}}.jar'
-          path: build/libs/*.jar
+          path: app/*.jar
 
       - name: Write Config & Key Files
         run: |
@@ -113,7 +113,5 @@ jobs:
             key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
             script: |
               sudo mv ~/app/yt-download-api-${{env.VERSION}}.jar /app/yt-download-api.jar
-              sudo chown ubuntu:ubuntu /app/yt-download-api.jar
-              sudo chmod +x /app/yt-download-api.jar
               nohup java -jar /app/yt-download-api.jar > output.$(date --iso).log 2>&1 &
 
