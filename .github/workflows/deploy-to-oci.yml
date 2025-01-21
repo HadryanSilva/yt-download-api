@@ -31,7 +31,7 @@ jobs:
         run:
           echo "VERSION=$(./gradlew properties -q | grep "version:" | awk '{print $2}')" >> $GITHUB_ENV
 
-      - name: Pubish Jar
+      - name: Publish Jar
         uses: actions/upload-artifact@v4
         with:
           name: 'yt-download-api-${{env.VERSION}}-all.jar'
@@ -62,17 +62,6 @@ jobs:
         run: |
           oci setup repair-file-permissions --file /home/runner/.oci/config
           oci setup repair-file-permissions --file /home/runner/.oci/key.pem
-          
-      - name: 'Check Existing Instance'
-        run: |
-            echo "INSTANCE_OCID=$( \
-              oci compute instance list \
-              --lifecycle-state RUNNING \
-              --compartment-id ${{secrets.VM_COMPARTMENT_OCID}} \
-              --display-name yt-download-api \
-              --query "data [0].id" \
-              --raw-output \
-            )" >> $GITHUB_ENV
           
       - name: Get Instance IP
         run: |
