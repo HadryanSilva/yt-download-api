@@ -102,7 +102,7 @@ jobs:
           host: ${{ env.INSTANCE_IP }}
           username: ubuntu
           key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
-          source: app/yt-download-api-${{env.VERSION}}.jar
+          source: build/libs/yt-download-api-${{env.VERSION}}.jar
           target: /home/ubuntu/app
 
       - name: Start App
@@ -112,6 +112,5 @@ jobs:
           username: ubuntu
           key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
           script: |
-            sudo mv ~/app/yt-download-api-${{env.VERSION}}.jar /app/yt-download-api.jar
-            nohup java -jar /app/yt-download-api.jar > output.$(date --iso).log 2>&1 &
+            nohup java -jar /app/yt-download-api-${{env.VERSION}}.jar > output.$(date --iso).log 2>&1 &
 
