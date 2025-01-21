@@ -26,7 +26,7 @@ jobs:
 
       - name: Assemble Jar
         run: |
-          ./gradlew assemble
+          ./gradlew clean build -x test
 
       - name: Get Version Number
         run:
