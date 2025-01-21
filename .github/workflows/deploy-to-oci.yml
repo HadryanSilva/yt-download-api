@@ -41,7 +41,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: 'yt-download-api-${{env.VERSION}}.jar'
-          path: build/libs/yt-download-api-${{env.VERSION}}.jar
+          path: app/yt-download-api-${{env.VERSION}}.jar
 
       - name: Write Config & Key Files
         run: |
