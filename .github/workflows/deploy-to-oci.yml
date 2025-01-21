@@ -24,7 +24,7 @@ jobs:
       - name: Grant execute permissions to Gradle wrapper
         run: chmod +x ./gradlew
 
-      - name: Assemble Jar
+      - name: Build with Gradle
         run: |
           ./gradlew clean build -x test
 
@@ -35,8 +35,8 @@ jobs:
       - name: Publish Jar
         uses: actions/upload-artifact@v4
         with:
-          name: 'yt-download-api-${{env.VERSION}}-all.jar'
-          path: build/libs/*-all.jar
+          name: 'yt-download-api-${{env.VERSION}}.jar'
+          path: build/libs/*.jar
 
       - name: Debug Instance OCID
         run: |
@@ -85,7 +85,7 @@ jobs:
           done; echo "SSH ready!"
 
       - name: Stop App
-        uses: appleboy/ssh-action@v0.1.4
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{env.INSTANCE_IP}}
           username: ubuntu
