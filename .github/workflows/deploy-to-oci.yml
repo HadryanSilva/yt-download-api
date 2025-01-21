@@ -37,6 +37,10 @@ jobs:
           name: 'yt-download-api-${{env.VERSION}}-all.jar'
           path: build/libs/*-all.jar
 
+      - name: Debug Instance OCID
+        run:
+          echo "Instance OCID: ${{ secrets.INSTANCE_OCID }}"
+
       - name: Write Config & Key Files
         run: |
           mkdir ~/.oci
