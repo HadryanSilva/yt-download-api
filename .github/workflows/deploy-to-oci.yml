@@ -95,7 +95,8 @@ jobs:
             fi
 
             sudo mkdir -p /app
-      - name: Ensure app directory is clean
+
+      - name: Check existing JAR files
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ env.INSTANCE_IP }}

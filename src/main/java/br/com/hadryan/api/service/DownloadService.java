@@ -29,7 +29,6 @@ public class DownloadService {
                 "-o", tempDirectory + File.separator + "%(title)s.%(ext)s",
                 request.getUrl()
         );
-        log.info("Download command: {}", processBuilder.command());
         try {
             log.info("Starting download process");
             Process process = processBuilder.start();
@@ -50,19 +49,15 @@ public class DownloadService {
             }
 
             log.info("Download completed successfully");
-            return getDownloadFile(outputDir.toPath());
+            return Files.list(outputDir.toPath())
+                    .filter(Files::isRegularFile)
+                    .map(Path::toFile)
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Downloaded file not found"));
         } catch (Exception e) {
             log.error("Error during download", e);
             throw new RuntimeException("Failed to download video", e);
         }
-    }
-
-    private File getDownloadFile(Path path) throws IOException {
-        return Files.list(path)
-                .filter(Files::isRegularFile)
-                .map(Path::toFile)
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Downloaded file not found"));
     }
 
     private void consumeStream(InputStream stream, String logLevel) {
