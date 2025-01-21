@@ -91,8 +91,6 @@ jobs:
           key: ${{secrets.VM_SSH_PRIVATE_KEY}}
           script: |
             pid=$(ps aux | grep "[y]t-download-api.jar" | awk '{print $2}')
-
-            # Verificar se o PID foi encontrado
             if [ -z "$pid" ]; then
               echo "Process not found. No need to stop."
             else
@@ -108,7 +106,7 @@ jobs:
           host: ${{ env.INSTANCE_IP }}
           username: ubuntu
           key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
-          source: build/libs/yt-download-api${{env.VERSION}}.jar
+          source: build/libs/yt-download-api-${{env.VERSION}}.jar
           target: "app"
 
       - name: Start App
