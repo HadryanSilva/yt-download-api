@@ -76,13 +76,16 @@ jobs:
             --raw-output)
           echo "INSTANCE_IP=$INSTANCE_IP" >> $GITHUB_ENV
           echo "Instance IP: $INSTANCE_IP"
-
       - name: Wait for SSH
         run: |
           while ! nc -w5 -z ${{ env.INSTANCE_IP }} 22; do
                   sleep 5
                   echo "SSH not available..."
           done; echo "SSH ready!"
+
+      - name: Verify SSH Key
+        run: |
+          echo "${{ secrets.VM_SSH_PRIVATE_KEY }}" | head -n 5
 
       - name: Stop App
         uses: appleboy/ssh-action@v1.2.0
@@ -98,3 +101,23 @@ jobs:
               kill -9 $pid
             fi
             sudo mkdir -p /app
+
+      - name: Push JAR
+        uses: appleboy/scp-action@0.1.7
+        with:
+          with:
+            host: ${{ env.INSTANCE_IP }}
+            username: opc
+            key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
+            source: "build/libs/yt-download-api-${{env.VERSION}}.jar"
+            target: "app"
+            strip_components: 2
+      - name:
+          uses: appleboy/ssh-action@v1.2.0
+          with:
+            host: ${{ env.INSTANCE_IP }}
+            username: ubuntu
+            key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
+            script: |
+              sudo mv ~/app/yt-download-api-${{env.VERSION}}.jar /app/yt-download-api.jar
+              nohup java -jar /app/yt-download-api.jar > output.$(date --iso).log 2>&1 &
