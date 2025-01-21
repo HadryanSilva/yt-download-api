@@ -5,7 +5,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
@@ -38,6 +37,7 @@ public class DownloadService {
                     request.getUrl()
             );
             log.info("Starting download process");
+            log.info("Command: {}", processBuilder.command());
             Process process = processBuilder.start();
 
             new Thread(() -> consumeStream(process.getInputStream(), "INFO")).start();
