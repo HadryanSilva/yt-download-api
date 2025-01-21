@@ -16,12 +16,6 @@ public class DownloadService {
     public File download(DownloadPostRequest request) {
         String tempDirectory = System.getProperty("java.io.tmpdir") + File.separator + "yt-dlp-downloads";
         try {
-            String jarDir = new File(ProcessBuilder.class.getProtectionDomain()
-                    .getCodeSource()
-                    .getLocation()
-                    .toURI())
-                    .getParent();
-            String cookiesFilePath = jarDir + File.separator + "cookies.txt";
             File outputDir = new File(tempDirectory);
             if (!outputDir.exists() && !outputDir.mkdirs()) {
                 throw new RuntimeException("Failed to create temporary directory for downloads");
@@ -30,14 +24,13 @@ public class DownloadService {
             ProcessBuilder processBuilder = new ProcessBuilder();
             processBuilder.command(
                     "yt-dlp",
-                    "--cookies", cookiesFilePath,
+                    "--cookies", "/home/ubuntu/app/cookies.txt",
                     "-f", "bv+ba/b",
                     "-S", "res:" + request.getResolution(),
                     "-o", tempDirectory + File.separator + "%(title)s.%(ext)s",
                     request.getUrl()
             );
             log.info("Starting download process");
-            log.info("Command: {}", processBuilder.command());
             Process process = processBuilder.start();
 
             new Thread(() -> consumeStream(process.getInputStream(), "INFO")).start();
