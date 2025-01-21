@@ -38,10 +38,6 @@ jobs:
           name: 'yt-download-api-${{env.VERSION}}.jar'
           path: build/libs/*.jar
 
-      - name: Debug Instance OCID
-        run: |
-          echo "Instance OCID: ${{ secrets.INSTANCE_OCID }}"
-
       - name: Write Config & Key Files
         run: |
           mkdir ~/.oci
@@ -63,7 +59,7 @@ jobs:
           echo "/home/runner/bin" >> $GITHUB_PATH
           exec -l $SHELL
           
-      - name: 'Fix Config File Permissions'
+      - name: Fix Config File Permissions
         run: |
           oci setup repair-file-permissions --file /home/runner/.oci/config
           oci setup repair-file-permissions --file /home/runner/.oci/key.pem
@@ -94,12 +90,16 @@ jobs:
           username: ubuntu
           key: ${{secrets.VM_SSH_PRIVATE_KEY}}
           script: |
-            pid=`ps aux | grep "[y]t-download-api.jar" | awk '{print $2}'`
-            if [ "$pid" == "" ]; then
-              echo "Process not found"
+            pid=$(ps aux | grep "[y]t-download-api.jar" | awk '{print $2}')
+
+            # Verificar se o PID foi encontrado
+            if [ -z "$pid" ]; then
+              echo "Process not found. No need to stop."
             else
+              echo "Stopping process with PID: $pid"
               kill -9 $pid
             fi
+
             sudo mkdir -p /app
 
       - name: Push JAR
