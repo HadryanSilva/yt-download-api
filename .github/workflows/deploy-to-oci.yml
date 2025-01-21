@@ -41,7 +41,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: 'yt-download-api-${{env.VERSION}}.jar'
-          path: app/*.jar
+          path: build/libs/*.jar
 
       - name: Write Config & Key Files
         run: |
@@ -108,7 +108,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
           source: app/yt-download-api-${{env.VERSION}}.jar
-          target: "app"
+          target: /app/yt-download-api-${{env.VERSION}}.jar
 
       - name: Start App
         uses: appleboy/ssh-action@master
