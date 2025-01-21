@@ -30,6 +30,7 @@ public class DownloadService {
         );
 
         try {
+            log.info("Starting download process");
             Process process = processBuilder.start();
 
             new Thread(() -> consumeStream(process.getInputStream(), "INFO")).start();
@@ -48,7 +49,6 @@ public class DownloadService {
             }
 
             log.info("Download completed successfully");
-
             return Files.list(outputDir.toPath())
                     .filter(Files::isRegularFile)
                     .map(Path::toFile)
