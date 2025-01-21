@@ -23,6 +23,7 @@ public class DownloadService {
         ProcessBuilder processBuilder = new ProcessBuilder();
         processBuilder.command(
                 "yt-dlp",
+                "--cookies", "cookies.txt",
                 "-f", "bv+ba/b",
                 "-S", "res:" + request.getResolution(),
                 "-o", tempDirectory + File.separator + "%(title)s.%(ext)s",
