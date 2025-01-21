@@ -103,21 +103,21 @@ jobs:
             sudo mkdir -p /app
 
       - name: Push JAR
-        uses: appleboy/scp-action@0.1.7
+        uses: appleboy/scp-action@master
         with:
           host: ${{ env.INSTANCE_IP }}
-          username: opc
+          username: ubuntu
           key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
-          source: "build/libs/yt-download-api-${{env.VERSION}}.jar"
+          source: build/libs/yt-download-api${{env.VERSION}}.jar
           target: "app"
-          strip_components: 2
 
-      - name:
-          uses: appleboy/ssh-action@v1.2.0
-          with:
+      - name: Start App
+        uses: appleboy/ssh-action@master
+        with:
             host: ${{ env.INSTANCE_IP }}
             username: ubuntu
             key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
             script: |
               sudo mv ~/app/yt-download-api-${{env.VERSION}}.jar /app/yt-download-api.jar
               nohup java -jar /app/yt-download-api.jar > output.$(date --iso).log 2>&1 &
+
