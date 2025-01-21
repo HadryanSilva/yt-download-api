@@ -6,7 +6,8 @@ on:
       - master
 
 jobs:
-  build-and-deploy:
+  build-job:
+    name: Build job
     runs-on: ubuntu-latest
 
     steps:
@@ -22,23 +23,85 @@ jobs:
       - name: Grant execute permissions to Gradle wrapper
         run: chmod +x ./gradlew
 
-      - name: Build the application
+      - name: Assemble Jar
         run: |
-          ./gradlew clean build -x test
+          ./gradlew assemble
 
-      - name: Copy application to OCI instance
-        env:
-          OCI_PRIVATE_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
-        run: |
-          echo "$OCI_PRIVATE_KEY" > /tmp/private_key.pem
-          chmod 600 /tmp/private_key.pem
-          scp -i /tmp/private_key.pem build/libs/yt-download-api-0.0.1-SNAPSHOT.jar opc@${{ secrets.VM_PUBLIC_IP }}:/home/opc/
+      - name: Get Version Number
+        run:
+          echo "VERSION=$(./gradlew properties -q | grep "version:" | awk '{print $2}')" >> $GITHUB_ENV
 
-      - name: Restart application on OCI instance
-        env:
-          OCI_PRIVATE_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
+      - name: Pubish Jar
+        uses: actions/upload-artifact@v2-preview
+        with:
+          name: 'yt-download-api-${{env.VERSION}}-all.jar'
+          path: build/libs/*-all.jar
+
+      - name: Write Config & Key Files
         run: |
-          ssh -i /tmp/private_key.pem opc@${{ secrets.VM_PUBLIC_IP }} << EOF
-          pkill -f 'java -jar yt-download-api-0.0.1-SNAPSHOT.jar' || true
-          nohup java -jar /home/opc/yt-download-api-0.0.1-SNAPSHOT.jar > /home/opc/myapp.log 2>&1 &
-          EOF
+          mkdir ~/.oci
+          echo "[DEFAULT]" >> ~/.oci/config
+          echo "user=${{secrets.OCI_USER_OCID}}" >> ~/.oci/config
+          echo "fingerprint=${{secrets.OCI_FINGERPRINT}}" >> ~/.oci/config
+          echo "pass_phrase=${{secrets.OCI_PASSPHRASE}}" >> ~/.oci/config
+          echo "region=${{secrets.OCI_REGION}}" >> ~/.oci/config
+          echo "tenancy=${{secrets.OCI_TENANCY_OCID}}" >> ~/.oci/config
+          echo "key_file=~/.oci/key.pem" >> ~/.oci/config
+          echo "${{secrets.OCI_KEY_FILE}}" >> ~/.oci/key.pem
+          echo "${{secrets.VM_SSH_PUB_KEY}}" >> /home/runner/.oci/id_vm.pub
+
+      - name: Install OCI CLI
+        run: |
+          curl -L -O https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh
+          chmod +x install.sh
+          ./install.sh --accept-all-defaults
+          echo "/home/runner/bin" >> $GITHUB_PATH
+          exec -l $SHELL
+          
+      - name: 'Fix Config File Permissions'
+        run: |
+          oci setup repair-file-permissions --file /home/runner/.oci/config
+          oci setup repair-file-permissions --file /home/runner/.oci/key.pem
+          
+      - name: 'Check Existing Instance'
+        run: |
+            echo "INSTANCE_OCID=$( \
+              oci compute instance list \
+              --lifecycle-state RUNNING \
+              --compartment-id ${{secrets.VM_COMPARTMENT_OCID}} \
+              --display-name yt-download-api \
+              --query "data [0].id" \
+              --raw-output \
+            )" >> $GITHUB_ENV
+          
+      - name: Get Instance IP
+        run: |
+          echo "INSTANCE_IP=$( \
+            oci compute instance list-vnics \
+            --instance-id ${{env.INSTANCE_OCID}} \
+            --query 'data [0]."public-ip"' \
+            --raw-output \
+          )" >> $GITHUB_ENV
+          echo Instance IP: ${{ env.INSTANCE_IP }}
+
+      - name: Wait for SSH
+        run: |
+          while ! nc -w5 -z ${{ env.INSTANCE_IP }} 22; do
+                  sleep 5
+                  echo "SSH not available..."
+          done; echo "SSH ready!"
+
+      - name: Stop App
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{env.INSTANCE_IP}}
+          username: ubuntu
+          key: ${{secrets.VM_SSH_PRIVATE_KEY}}
+          script: |
+            pid=`ps aux | grep "[y]t-download-api.jar" | awk '{print $2}'`
+            if [ "$pid" == "" ]; then
+              echo "Process not found"
+            else
+              kill -9 $pid
+            fi
+            sudo mkdir -p /app
