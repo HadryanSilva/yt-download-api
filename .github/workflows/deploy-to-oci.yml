@@ -32,6 +32,11 @@ jobs:
         run:
           echo "VERSION=$(./gradlew properties -q | grep "version:" | awk '{print $2}')" >> $GITHUB_ENV
 
+      - name: Move JAR to app directory
+        run: |
+          mkdir -p app
+          mv build/libs/*.jar app/
+
       - name: Publish Jar
         uses: actions/upload-artifact@v4
         with:
@@ -102,16 +107,16 @@ jobs:
           host: ${{ env.INSTANCE_IP }}
           username: ubuntu
           key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
-          source: /build/libs/yt-download-api-${{env.VERSION}}.jar
-          target: /app/
+          source: app/yt-download-api-${{env.VERSION}}.jar
+          target: "app"
 
       - name: Start App
         uses: appleboy/ssh-action@master
         with:
-            host: ${{ env.INSTANCE_IP }}
-            username: ubuntu
-            key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
-            script: |
-              sudo mv ~/app/yt-download-api-${{env.VERSION}}.jar /app/yt-download-api.jar
-              nohup java -jar /app/yt-download-api.jar > output.$(date --iso).log 2>&1 &
+          host: ${{ env.INSTANCE_IP }}
+          username: ubuntu
+          key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
+          script: |
+            sudo mv ~/app/yt-download-api-${{env.VERSION}}.jar /app/yt-download-api.jar
+            nohup java -jar /app/yt-download-api.jar > output.$(date --iso).log 2>&1 &
 
