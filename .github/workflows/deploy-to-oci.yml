@@ -38,7 +38,7 @@ jobs:
           path: build/libs/*-all.jar
 
       - name: Debug Instance OCID
-        run:
+        run: |
           echo "Instance OCID: ${{ secrets.INSTANCE_OCID }}"
 
       - name: Write Config & Key Files
