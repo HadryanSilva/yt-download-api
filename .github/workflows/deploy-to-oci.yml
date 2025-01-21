@@ -1,0 +1,41 @@
+name: Deploy to OCI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'openjdk'
+
+      - name: Build the application
+        run: |
+          ./gradlew clean build -x test
+
+      - name: Copy application to OCI instance
+        env:
+          OCI_PRIVATE_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
+        run: |
+          echo "$OCI_PRIVATE_KEY" > /tmp/private_key.pem
+          chmod 600 /tmp/private_key.pem
+          scp -i /tmp/private_key.pem build/libs/yt-download-api-0.0.1-SNAPSHOT.jar opc@${{ secrets.VM_PUBLIC_IP }}:/home/opc/
+
+      - name: Restart application on OCI instance
+        env:
+          OCI_PRIVATE_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
+        run: |
+          ssh -i /tmp/private_key.pem opc@${{ secrets.VM_PUBLIC_IP }} << EOF
+          pkill -f 'java -jar yt-download-api-0.0.1-SNAPSHOT.jar' || true
+          nohup java -jar /home/opc/yt-download-api-0.0.1-SNAPSHOT.jar > /home/opc/myapp.log 2>&1 &
+          EOF
