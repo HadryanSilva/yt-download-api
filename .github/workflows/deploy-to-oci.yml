@@ -105,13 +105,13 @@ jobs:
       - name: Push JAR
         uses: appleboy/scp-action@0.1.7
         with:
-          with:
-            host: ${{ env.INSTANCE_IP }}
-            username: opc
-            key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
-            source: "build/libs/yt-download-api-${{env.VERSION}}.jar"
-            target: "app"
-            strip_components: 2
+          host: ${{ env.INSTANCE_IP }}
+          username: opc
+          key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
+          source: "build/libs/yt-download-api-${{env.VERSION}}.jar"
+          target: "app"
+          strip_components: 2
+
       - name:
           uses: appleboy/ssh-action@v1.2.0
           with:
