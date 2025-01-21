@@ -79,10 +79,6 @@ jobs:
                   echo "SSH not available..."
           done; echo "SSH ready!"
 
-      - name: Verify SSH Key
-        run: |
-          echo "${{ secrets.VM_SSH_PRIVATE_KEY }}" | head -n 5
-
       - name: Stop App
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -107,7 +103,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
           source: build/libs/yt-download-api-${{env.VERSION}}.jar
-          target: /home/ubuntu/app/
+          target: /app/
 
       - name: Start App
         uses: appleboy/ssh-action@master
@@ -116,6 +112,8 @@ jobs:
             username: ubuntu
             key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
             script: |
-              sudo mv ~/app/build/libs/yt-download-api-${{env.VERSION}}.jar /app/build/libs/yt-download-api.jar
-              nohup java -jar /app/build/libs/yt-download-api.jar > output.$(date --iso).log 2>&1 &
+              sudo mv ~/app/yt-download-api-${{env.VERSION}}.jar /app/yt-download-api.jar
+              sudo chown ubuntu:ubuntu /app/yt-download-api.jar
+              sudo chmod +x /app/yt-download-api.jar
+              nohup java -jar /app/yt-download-api.jar > output.$(date --iso).log 2>&1 &
 
