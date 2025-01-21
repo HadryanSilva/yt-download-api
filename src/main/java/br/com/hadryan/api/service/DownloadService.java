@@ -29,6 +29,7 @@ public class DownloadService {
                 "-o", tempDirectory + File.separator + "%(title)s.%(ext)s",
                 request.getUrl()
         );
+        log.info("Download command: {}", processBuilder.command());
         try {
             log.info("Starting download process");
             Process process = processBuilder.start();
