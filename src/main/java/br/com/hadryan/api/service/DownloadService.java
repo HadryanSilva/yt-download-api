@@ -15,21 +15,21 @@ public class DownloadService {
 
     public File download(DownloadPostRequest request) {
         String tempDirectory = System.getProperty("java.io.tmpdir") + File.separator + "yt-dlp-downloads";
-        try {
-            File outputDir = new File(tempDirectory);
-            if (!outputDir.exists() && !outputDir.mkdirs()) {
-                throw new RuntimeException("Failed to create temporary directory for downloads");
-            }
+        File outputDir = new File(tempDirectory);
+        if (!outputDir.exists() && !outputDir.mkdirs()) {
+            throw new RuntimeException("Failed to create temporary directory for downloads");
+        }
 
-            ProcessBuilder processBuilder = new ProcessBuilder();
-            processBuilder.command(
-                    "yt-dlp",
-                    "--cookies", "/home/ubuntu/app/cookies.txt",
-                    "-f", "bv+ba/b",
-                    "-S", "res:" + request.getResolution(),
-                    "-o", tempDirectory + File.separator + "%(title)s.%(ext)s",
-                    request.getUrl()
-            );
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        processBuilder.command(
+                "yt-dlp",
+                "--cookies", "/home/ubuntu/app/cookies.txt",
+                "-f", "bv+ba/b",
+                "-S", "res:" + request.getResolution(),
+                "-o", tempDirectory + File.separator + "%(title)s.%(ext)s",
+                request.getUrl()
+        );
+        try {
             log.info("Starting download process");
             Process process = processBuilder.start();
 
@@ -49,15 +49,19 @@ public class DownloadService {
             }
 
             log.info("Download completed successfully");
-            return Files.list(outputDir.toPath())
-                    .filter(Files::isRegularFile)
-                    .map(Path::toFile)
-                    .findFirst()
-                    .orElseThrow(() -> new RuntimeException("Downloaded file not found"));
+            return getDownloadFile(outputDir.toPath());
         } catch (Exception e) {
             log.error("Error during download", e);
             throw new RuntimeException("Failed to download video", e);
         }
+    }
+
+    private File getDownloadFile(Path path) throws IOException {
+        return Files.list(path)
+                .filter(Files::isRegularFile)
+                .map(Path::toFile)
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Downloaded file not found"));
     }
 
     private void consumeStream(InputStream stream, String logLevel) {
