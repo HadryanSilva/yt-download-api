@@ -9,6 +9,7 @@ jobs:
   build-job:
     name: Build job
     runs-on: ubuntu-latest
+    environment: OCI
 
     steps:
       - name: Check out code
