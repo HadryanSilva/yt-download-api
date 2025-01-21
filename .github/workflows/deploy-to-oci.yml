@@ -102,7 +102,7 @@ jobs:
           host: ${{ env.INSTANCE_IP }}
           username: ubuntu
           key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
-          source: build/libs/yt-download-api-${{env.VERSION}}.jar
+          source: /build/libs/yt-download-api-${{env.VERSION}}.jar
           target: /app/
 
       - name: Start App
