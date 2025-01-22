@@ -78,7 +78,7 @@ public class DownloadService {
         } else {
             processBuilder.command(
                     "yt-dlp",
-                    "--cookies" + "/home/ubuntu/app/cookies.txt",
+                    "--cookies", "/home/ubuntu/app/cookies.txt",
                     "-f", "bv+ba/b",
                     "-S", "res:" + resolution,
                     "-o", tempDirectory + File.separator + "%(title)s.%(ext)s",
