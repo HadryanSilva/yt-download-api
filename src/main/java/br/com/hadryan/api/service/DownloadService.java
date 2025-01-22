@@ -19,19 +19,9 @@ public class DownloadService {
         if (!outputDir.exists() && !outputDir.mkdirs()) {
             throw new RuntimeException("Failed to create temporary directory for downloads");
         }
-
-        ProcessBuilder processBuilder = new ProcessBuilder();
-        processBuilder.command(
-                "yt-dlp",
-                "--cookies", "/home/ubuntu/app/cookies.txt",
-                "-f", "bv+ba/b",
-                "-S", "res:" + request.getResolution(),
-                "-o", tempDirectory + File.separator + "%(title)s.%(ext)s",
-                request.getUrl()
-        );
         try {
             log.info("Starting download process");
-            Process process = processBuilder.start();
+            Process process = createProcess(request.getUrl(), request.getResolution(), tempDirectory);
 
             new Thread(() -> consumeStream(process.getInputStream(), "INFO")).start();
             new Thread(() -> consumeStream(process.getErrorStream(), "ERROR")).start();
@@ -74,4 +64,33 @@ public class DownloadService {
             log.error("Failed to consume process stream", e);
         }
     }
+
+    private Process createProcess(String url, String resolution, String tempDirectory) throws IOException {
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        if (isWindows()) {
+            processBuilder.command(
+                    "yt-dlp",
+                    "-f", "bv+ba/b",
+                    "-S", "res:" + resolution,
+                    "-o", tempDirectory + File.separator + "%(title)s.%(ext)s",
+                    url
+            );
+        } else {
+            processBuilder.command(
+                    "yt-dlp",
+                    "--cookies" + "/home/ubuntu/app/cookies.txt",
+                    "-f", "bv+ba/b",
+                    "-S", "res:" + resolution,
+                    "-o", tempDirectory + File.separator + "%(title)s.%(ext)s",
+                    url
+            );
+        }
+
+        return processBuilder.start();
+    }
+
+    private boolean isWindows() {
+        return System.getProperty("os.name").toLowerCase().contains("win");
+    }
+
 }
