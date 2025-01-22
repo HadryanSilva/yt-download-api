@@ -76,6 +76,7 @@ public class DownloadService {
                     url
             );
         } else {
+            log.info("Using cookies file: /home/ubuntu/app/cookies.txt");
             processBuilder.command(
                     "yt-dlp",
                     "--cookies", "/home/ubuntu/app/cookies.txt",
